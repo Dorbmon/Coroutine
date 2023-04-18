@@ -1,14 +1,14 @@
+
+#ifdef __linux
 #include <exception>
 #include <functional>
 
-#ifdef __linux
-#define _GNU_SOURCE
 #include <pthread.h>
 #include <sched.h>
 #include <string.h>
 #include <unistd.h>
 #include <thread>
-#include "core.hpp"
+#include "core.h"
 namespace RCo {
 inline long getCoreNum() {
   long ret = sysconf(_SC_NPROCESSORS_ONLN);
@@ -29,7 +29,7 @@ class RThread {
 
  public:
   Core* core;
-  RThread(Core* core, std::function<void()> f) : f(f), core(core) {
+  RThread(Core* core, std::function<void()>&& f) : f(f), core(core) {
     auto err = pthread_create(&threadHandler, NULL, &thread_function, this);
     if (err != 0) {
       throw strerror(err);
@@ -38,6 +38,7 @@ class RThread {
     pthread_setaffinity_np(this->threadHandler, sizeof(mask), &mask);
   }
   void Run() noexcept { pthread_detach(this->threadHandler); }
+  ~RThread() { pthread_cancel(this->threadHandler); }  // not immediately
 };
 }  // namespace RCo
 #endif

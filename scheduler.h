@@ -2,20 +2,21 @@
 #include <coroutine>
 #include <list>
 #include <stdexcept>
-#include "core.hpp"
+#include "core.h"
 #include "thread.h"
 namespace RCo {
 struct RSchedulerConfig {
   long MaxCores;
-  long MaxSystemThread;
+  long MaxSystemThreadPerCore;
 };
 class RScheduler {
  private:
-  RSchedulerConfig config;
   long useCoreNum;
-  std::list<Core> cores;
+  std::vector<Core*> cores;
+  unsigned long long coreRange = 0;
 
  public:
+  RSchedulerConfig config;
   RScheduler() = delete;
   RScheduler(RSchedulerConfig config) {
     [[unlikely]] if (config.MaxCores <= 0) {
@@ -24,8 +25,10 @@ class RScheduler {
     this->config = config;
     useCoreNum = std::min(getCoreNum(), config.MaxCores);
     for (long i = 0; i < useCoreNum; i++) {
-      this->cores.push_back(Core(i, this));
+      this->cores.push_back(new Core(i, this));
     }
   }
+  Core* GetOneCore() noexcept { return cores[(coreRange++) % cores.size()]; }
 };
+extern RScheduler* _defaultScheduler;
 }  // namespace RCo

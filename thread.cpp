@@ -1,3 +1,3 @@
 #include "thread.h"
-#include "core.hpp"
+#include "core.h"
 namespace RCo {}  // namespace RCo

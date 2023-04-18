@@ -9,8 +9,9 @@ class RWorker {
   RThread* thread;
   RWorker() = delete;
   RWorker(Core* core);
+  ~RWorker();
 
  private:
-  void threadFunction();
+  void threadFunction() noexcept;
 };
 }  // namespace RCo
