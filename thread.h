@@ -2,6 +2,7 @@
 #include <functional>
 
 #ifdef __linux
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <sched.h>
 #include <string.h>
@@ -22,10 +23,6 @@ class RThread {
   std::function<void()> f;
   static void* thread_function(void* arg) noexcept {
     RThread* t = static_cast<RThread*>(arg);
-    auto mask = t->core->toBindMask();
-    if (sched_setaffinity(0, sizeof(mask), &mask) == -1) {
-      // failed
-    }
     (t->f)();
     return nullptr;
   }
@@ -37,7 +34,10 @@ class RThread {
     if (err != 0) {
       throw strerror(err);
     }
+    auto mask = this->core->toBindMask();
+    pthread_setaffinity_np(this->threadHandler, sizeof(mask), &mask);
   }
+  void Run() noexcept { pthread_detach(this->threadHandler); }
 };
 }  // namespace RCo
 #endif

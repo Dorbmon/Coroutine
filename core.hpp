@@ -2,7 +2,7 @@
 #include <sched.h>
 #include <atomic>
 #include "list.hpp"
-#include "worker.hpp"
+#include "worker.h"
 namespace RCo {
 class RScheduler;
 class Core {
