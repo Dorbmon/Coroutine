@@ -22,14 +22,14 @@ bool RWorker::appendWork(work work) noexcept {
   return true;
 }
 bool RWorker::isBusy() noexcept {
-  if (this->shutdown.load()) {
+  if (this->shutdown) {
     return true;
   }
-  return this->working.load();
+  return this->working;
 }
 bool RWorker::tagNewWorkIsOnTheWay() noexcept {
   worksLock.lock();
-  if (this->shutdown.load()) {
+  if (this->shutdown) {
     worksLock.unlock();
     return false;
   }
@@ -48,11 +48,11 @@ void RWorker::threadFunction() noexcept {
       auto work = this->works.front();
       this->works.pop_front();
       this->worksLock.unlock();
-      this->working.store(true);
+      this->working = true;
       work.resume();
     } else {
       this->worksLock.unlock();
-      this->working.store(false);
+      this->working = false;
       noTaskTryTime++;
       if (noTaskTryTime > this->core->scheduler->config.MaxNoTaskTryTime &&
           !neverDieWorker) {
@@ -66,7 +66,7 @@ void RWorker::threadFunction() noexcept {
           continue;
         }
         // starts to shutdown
-        shutdown.store(true);
+        shutdown = true;
         this->worksLock.unlock();
         pthread_exit(nullptr);  // this worker no longer exists
         this->core->removeWorker(this);
