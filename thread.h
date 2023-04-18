@@ -31,9 +31,7 @@ class RThread {
   Core* core;
   RThread(Core* core, std::function<void()>&& f) : f(f), core(core) {
     auto err = pthread_create(&threadHandler, NULL, &thread_function, this);
-    if (err != 0) {
-      throw strerror(err);
-    }
+    [[unlikely]] if (err != 0) { throw strerror(err); }
     auto mask = this->core->toBindMask();
     pthread_setaffinity_np(this->threadHandler, sizeof(mask), &mask);
   }

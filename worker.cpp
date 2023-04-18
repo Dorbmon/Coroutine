@@ -13,7 +13,8 @@ RWorker::~RWorker() {
 }
 bool RWorker::appendWork(work work) noexcept {
   this->worksLock.lock();
-  if (shutdown) {
+  [[unlikely]] if (shutdown) {
+    this->worksLock.lock();
     return false;
   }
   newWorkTag--;
@@ -29,7 +30,7 @@ bool RWorker::isBusy() noexcept {
 }
 bool RWorker::tagNewWorkIsOnTheWay() noexcept {
   worksLock.lock();
-  if (this->shutdown) {
+  [[unlikely]] if (this->shutdown) {
     worksLock.unlock();
     return false;
   }
