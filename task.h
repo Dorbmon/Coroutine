@@ -3,15 +3,15 @@
 #include <coroutine>
 #include <utility>
 namespace RCo {
-class Core;
+class RWorker;
 class AbstractTask {};
 template <typename Result>
 class RTask {
  public:
   class RPromise;
   using promise_type = RPromise;
-  RTask(std::coroutine_handle<promise_type>, Core* core);
-  Core* core;
+  RTask(std::coroutine_handle<promise_type>, RWorker* worker);
+  RWorker* worker;
   void await_suspend(std::coroutine_handle<> h);
 
  private:

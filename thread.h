@@ -1,4 +1,4 @@
-
+#pragma once
 #ifdef __linux
 #include <exception>
 #include <functional>

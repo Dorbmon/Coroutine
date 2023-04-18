@@ -2,19 +2,17 @@
 #include <sched.h>
 #include <atomic>
 #include <vector>
-#include "list.hpp"
 #include "worker.h"
 namespace RCo {
 class RScheduler;
 class Core {
  private:
   long coreID;
-  std::atomic_long workerNum;
   std::mutex workersLock;
   std::vector<RWorker*> workers;
-  RScheduler* scheduler;
 
  public:
+  RScheduler* scheduler;
   Core() = delete;
   Core(long coreID, RScheduler* scheduler);
   cpu_set_t toBindMask() {
@@ -24,5 +22,6 @@ class Core {
     return mask;
   }
   RWorker* getOneWorker() noexcept;
+  void removeWorker(RWorker* worker) noexcept;
 };
 }  // namespace RCo

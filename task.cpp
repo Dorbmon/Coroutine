@@ -4,11 +4,11 @@
 namespace RCo {
 template <typename Result>
 RTask<Result>::RTask(std::coroutine_handle<RTask<Result>::promise_type> handler,
-                     Core* core)
-    : handler(handler), core(core) {}
+                     RWorker* worker)
+    : handler(handler), worker(worker) {}
 template <typename Result>
 void RTask<Result>::await_suspend(std::coroutine_handle<> h) {
-  // the current coroutine is suspended, then pass the control to the scheduler
-  // get the core scheduler to obtain one another task to switch to
+  // the current coroutine is suspended, then call the worker to re-schedule
+  this->worker->appendWork(h);  // impossible to return false
 }
 }  // namespace RCo

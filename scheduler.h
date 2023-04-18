@@ -8,6 +8,7 @@ namespace RCo {
 struct RSchedulerConfig {
   long MaxCores;
   long MaxSystemThreadPerCore;
+  long MaxNoTaskTryTime;
 };
 class RScheduler {
  private:
