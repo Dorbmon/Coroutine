@@ -14,9 +14,8 @@ struct workBase {
 };
 template <typename returnValue>
 struct work : public workBase {
-  std::coroutine_handle<RPromise<returnValue>> handler;
-  void resume() { this->handler.resume(); }
-  std::promise<returnValue> promise;
+  RTask<returnValue> task;
+  void resume() { task.resume(); }
 };
 class RWorker {
  public:

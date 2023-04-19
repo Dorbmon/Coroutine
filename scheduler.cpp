@@ -14,10 +14,9 @@ std::promise<returnValue> RScheduler::run(std::function<returnValue(Args...)> f,
   // bind this task to one worker
   auto core = this->GetOneCore();
   auto worker = core->getOneWorker();
-  auto promise = std::promise<returnValue>();
+  RTask<realValue> awaitable = f(args...);
   worker->appendWork(work<realValue>{
-      .handler = f(args...),
-      .promise = promise});  // it has been tagged and will never return false
-  return promise;
+      .task = awaitable});  // it has been tagged and will never return false
+  return awaitable.promise;
 }
 }  // namespace RCo
