@@ -11,7 +11,7 @@ RWorker::RWorker(Core* core, bool neverDieWorker)
 RWorker::~RWorker() {
   delete this->thread;
 }
-bool RWorker::appendWork(workBase work) noexcept {
+bool RWorker::appendWork(workBase* work) noexcept {
   this->worksLock.lock();
   [[unlikely]] if (shutdown) {
     this->worksLock.lock();
@@ -50,7 +50,7 @@ void RWorker::threadFunction() noexcept {
       this->works.pop_front();
       this->worksLock.unlock();
       this->working = true;
-      work.resume();
+      work->resume();
     } else {
       this->worksLock.unlock();
       this->working = false;

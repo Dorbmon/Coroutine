@@ -10,12 +10,12 @@ namespace RCo {
 class RThread;
 class Core;
 struct workBase {
-  virtual void resume();
+  virtual void resume() = 0;
 };
 template <typename returnValue>
 struct work : public workBase {
   RTask<returnValue> task;
-  void resume() { task.resume(); }
+  virtual void resume() { task.resume(); }
 };
 class RWorker {
  public:
@@ -24,7 +24,7 @@ class RWorker {
   RWorker() = delete;
   RWorker(Core* core, bool neverDieWorker);
   ~RWorker();
-  bool appendWork(workBase work) noexcept;
+  bool appendWork(workBase* work) noexcept;
   bool isBusy() noexcept;
   bool tagNewWorkIsOnTheWay() noexcept;  // tell the worker not to shutdown as
                                          // the new work is coming on the way
@@ -34,7 +34,7 @@ class RWorker {
   std::atomic_bool shutdown = false;
   std::atomic_bool working = false;
   std::mutex worksLock;
-  std::list<workBase> works;
+  std::list<workBase*> works;
   std::atomic_int newWorkTag = 0;
   void threadFunction() noexcept;
 };
