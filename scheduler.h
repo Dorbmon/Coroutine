@@ -1,5 +1,6 @@
 #pragma once
 #include <coroutine>
+#include <future>
 #include <list>
 #include <stdexcept>
 #include "core.h"
@@ -30,6 +31,15 @@ class RScheduler {
     }
   }
   Core* GetOneCore() noexcept { return cores[(coreRange++) % cores.size()]; }
+  template <typename... Args, typename returnValue, typename realValue>
+    requires std::convertible_to<returnValue, RTask<realValue>>
+  std::promise<returnValue> run(std::function<returnValue(Args...)> f,
+                                const Args&... args);
 };
 extern RScheduler* _defaultScheduler;
+template <typename... Args, typename returnValue>
+static std::promise<returnValue> run(std::function<returnValue(Args...)> f,
+                                     const Args&... args) {
+  return _defaultScheduler->run(f, args...);
+}
 }  // namespace RCo

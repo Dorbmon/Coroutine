@@ -28,6 +28,7 @@ RWorker* Core::getOneWorker() noexcept {
     // can add another worker
     auto worker = new RWorker(
         this, workerNum == 0);  // if it is NO.0 worker, it never dies
+    worker->tagNewWorkIsOnTheWay();
     workers.push_back(worker);
     workersLock.unlock();
     return worker;

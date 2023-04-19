@@ -2,21 +2,30 @@
 // each worker will be binded to their own cpu core (1 core to multi workers)
 #include <atomic>
 #include <coroutine>
+#include <future>
 #include <list>
 #include <mutex>
+#include "task.h"
 namespace RCo {
 class RThread;
 class Core;
+struct workBase {
+  virtual void resume();
+};
+template <typename returnValue>
+struct work : public workBase {
+  std::coroutine_handle<RPromise<returnValue>> handler;
+  void resume() { this->handler.resume(); }
+  std::promise<returnValue> promise;
+};
 class RWorker {
-  typedef std::coroutine_handle<> work;
-
  public:
   Core* core;
   RThread* thread;
   RWorker() = delete;
   RWorker(Core* core, bool neverDieWorker);
   ~RWorker();
-  bool appendWork(work work) noexcept;
+  bool appendWork(workBase work) noexcept;
   bool isBusy() noexcept;
   bool tagNewWorkIsOnTheWay() noexcept;  // tell the worker not to shutdown as
                                          // the new work is coming on the way
@@ -26,7 +35,7 @@ class RWorker {
   std::atomic_bool shutdown = false;
   std::atomic_bool working = false;
   std::mutex worksLock;
-  std::list<work> works;
+  std::list<workBase> works;
   std::atomic_int newWorkTag = 0;
   void threadFunction() noexcept;
 };
