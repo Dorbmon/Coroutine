@@ -1,1 +1,1 @@
-namespace RCo {}  // namespace RCo
+namespace RCo {} // namespace RCo
