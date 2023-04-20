@@ -63,6 +63,7 @@ class RPromise {
     auto exception = std::current_exception();
     // stop the panic here to avoid the crash of whole program
   }
+  void await_transform() {}
   template <typename T>
     requires std::convertible_to<T, Result>
   void return_value(T&& value) noexcept {
