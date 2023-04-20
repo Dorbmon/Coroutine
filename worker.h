@@ -15,7 +15,8 @@ struct workBase {
 template <typename returnValue>
 struct work : public workBase {
   RTask<returnValue> task;
-  virtual void resume() { task.resume(); }
+  work(RTask<returnValue> task) : task(task) {}
+  virtual void resume() { task.handler.resume(); }
 };
 class RWorker {
  public:

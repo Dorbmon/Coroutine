@@ -1,9 +1,18 @@
+#include <math.h>
+#include <iostream>
 #include "scheduler.h"
 #include "task.h"
-
-RCo::RTask<int> add(int a, int b) {
-  co_return a + b;
+RCo::RTask<double> add(int a, int b) {
+  double ret = 0;
+  for (int i = 0; i < 10000; i++) {
+    ret += a * b * i * log(a * i);
+  }
+  std::cout << "here" << std::endl;
+  co_return ret;
 }
 int main() {
-  RCo::run(add, 1, 2);
+  auto ret = RCo::run(add, 1, 2);
+  std::cout << "gogogo" << std::endl;
+  auto v = ret.get();
+  std::cout << "cal v:" << v << std::endl;
 }
