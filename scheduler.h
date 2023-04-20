@@ -34,7 +34,6 @@ class RScheduler {
     for (long i = 0; i < useCoreNum; i++) {
       this->cores.push_back(new Core(i, this));
     }
-    std::cout << "init:" << useCoreNum << " cores" << std::endl;
   }
   Core* GetOneCore() noexcept { return cores[(coreRange++) % cores.size()]; }
   template <typename F, typename... Args>

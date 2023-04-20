@@ -2,10 +2,10 @@
 #include <iostream>
 #include "scheduler.h"
 #include "task.h"
-RCo::RTask<double> add(int a, int b) {
-  double ret = 0;
+RCo::RTask<long long> add(int a, int b) {
+  long long ret = 0;
   for (int i = 0; i < 10000; i++) {
-    ret += a * b * i * log(a * i);
+    ret += a * b * i;
   }
   std::cout << "here" << std::endl;
   co_return ret;

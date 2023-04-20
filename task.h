@@ -48,7 +48,7 @@ class RPromise {
         std::coroutine_handle<RPromise<Result>>::from_promise(*this), nullptr,
         promise);
   }
-  std::suspend_never initial_suspend() {
+  std::suspend_always initial_suspend() {
     return {};
   }  // never suspend initallly
 

@@ -1,6 +1,7 @@
 #include "worker.h"
 #include <pthread.h>
 #include <functional>
+#include <iostream>
 #include "scheduler.h"
 #include "thread.h"
 namespace RCo {
@@ -50,6 +51,7 @@ void RWorker::threadFunction() noexcept {
       this->works.pop_front();
       this->worksLock.unlock();
       this->working = true;
+      std::cout << "resume.." << std::endl;
       work->resume();
     } else {
       this->worksLock.unlock();
@@ -74,7 +76,7 @@ void RWorker::threadFunction() noexcept {
         return;
       }
     }
-    sched_yield();  // pass the cpu to other workers
+    sched_yield();  // pass the cpu to other workers on this core
   }
 }
 }  // namespace RCo
