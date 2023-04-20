@@ -13,6 +13,10 @@ struct workBase {
   virtual void resume() = 0;
 };
 extern thread_local RWorker* current_worker;
+extern thread_local workBase* current_work;
+#define rsched()                                      \
+  RCo::current_worker->appendWork(RCo::current_work); \
+  co_await std::suspend_always {}
 template <typename returnValue>
 struct work : public workBase {
   RTask<returnValue> task;

@@ -2,14 +2,13 @@
 #include <iostream>
 #include "scheduler.h"
 #include "task.h"
-#include "utils.h"
 #include "worker.h"
 RCo::RTask<long long> add(int a, int b) {
   long long ret = 0;
   for (int i = 0; i < 10000; i++) {
     ret += a * b * i;
+    rsched();
   }
-  std::cout << "here" << std::endl;
   // auto worker = __GetWorker();
   auto worker = RCo::current_worker;
   std::cout << "busy:" << worker->isBusy() << std::endl;
@@ -17,6 +16,7 @@ RCo::RTask<long long> add(int a, int b) {
 }
 int main() {
   auto ret = RCo::run(add, 1, 2);
+  // auto ret2 = RCo::run(add, 2, 3);
   std::cout << "gogogo" << std::endl;
   for (int i = 0; i < 100000; i++) {
   }

@@ -1,5 +1,4 @@
 #pragma once
-#include "worker.h"
 #ifdef __linux
 #include <exception>
 #include <functional>

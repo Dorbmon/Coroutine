@@ -6,6 +6,7 @@
 #include "thread.h"
 namespace RCo {
 thread_local RWorker* current_worker;
+thread_local workBase* current_work;
 RWorker::RWorker(Core* core, bool neverDieWorker)
     : core(core), neverDieWorker(neverDieWorker) {
   this->thread = new RThread(core, std::bind(&RWorker::threadFunction, this));
@@ -53,7 +54,7 @@ void RWorker::threadFunction() noexcept {
       this->works.pop_front();
       this->worksLock.unlock();
       this->working = true;
-      std::cout << "resume.." << std::endl;
+      current_work = work;
       work->resume();
     } else {
       this->worksLock.unlock();
@@ -78,7 +79,7 @@ void RWorker::threadFunction() noexcept {
         return;
       }
     }
-    sched_yield();  // pass the cpu to other workers on this core
+    sched_yield();  // pass the cpu to other workers(threads) on this core
   }
 }
 }  // namespace RCo
