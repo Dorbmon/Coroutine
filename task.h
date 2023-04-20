@@ -50,7 +50,7 @@ class RPromise {
   }
   std::suspend_always initial_suspend() {
     return {};
-  }  // never suspend initallly
+  }  // waiting for the scheduler to resume it
 
   template <typename T>
     requires std::convertible_to<T, Result>
@@ -61,6 +61,7 @@ class RPromise {
   std::suspend_never final_suspend() noexcept { return {}; }
   void unhandled_exception() noexcept {
     auto exception = std::current_exception();
+    // stop the panic here to avoid the crash of whole program
   }
   template <typename T>
     requires std::convertible_to<T, Result>
