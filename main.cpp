@@ -13,6 +13,9 @@ RCo::RTask<long long> add(int a, int b) {
 int main() {
   auto ret = RCo::run(add, 1, 2);
   std::cout << "gogogo" << std::endl;
+  for (int i = 0; i < 100000; i++) {
+  }
+  std::cout << "rfnish" << std::endl;
   auto v = ret.get();
   std::cout << "cal v:" << v << std::endl;
 }

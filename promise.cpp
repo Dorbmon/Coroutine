@@ -1,5 +1,4 @@
-#include "scheduler.h"
-#include "task.h"
+
 namespace RCo {
 // template <typename Result>
 // RTask<Result> RPromise<Result>::get_return_object() {

@@ -7,9 +7,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include "core.h"
-#include "task.h"
 #include "thread.h"
-#include "utils.h"
 namespace RCo {
 struct RSchedulerConfig {
   long MaxCores;
