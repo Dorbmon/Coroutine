@@ -5,6 +5,7 @@
 #include "scheduler.h"
 #include "thread.h"
 namespace RCo {
+thread_local RWorker* current_worker;
 RWorker::RWorker(Core* core, bool neverDieWorker)
     : core(core), neverDieWorker(neverDieWorker) {
   this->thread = new RThread(core, std::bind(&RWorker::threadFunction, this));
@@ -40,6 +41,7 @@ bool RWorker::tagNewWorkIsOnTheWay() noexcept {
   return true;
 }
 void RWorker::threadFunction() noexcept {
+  current_worker = this;
   int noTaskTryTime = 0;
   while (true) {
     // TODO: better schedule and schedule between thread

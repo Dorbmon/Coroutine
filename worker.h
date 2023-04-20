@@ -12,6 +12,7 @@ class Core;
 struct workBase {
   virtual void resume() = 0;
 };
+extern thread_local RWorker* current_worker;
 template <typename returnValue>
 struct work : public workBase {
   RTask<returnValue> task;

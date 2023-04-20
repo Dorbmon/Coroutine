@@ -1,4 +1,5 @@
 #pragma once
+#include "worker.h"
 #ifdef __linux
 #include <exception>
 #include <functional>
@@ -28,6 +29,7 @@ class RThread {
   }
 
  public:
+  static pthread_t currentThreadID() { return pthread_self(); }
   Core* core;
   RThread(Core* core, std::function<void()>&& f) : f(f), core(core) {
     auto err = pthread_create(&threadHandler, NULL, &thread_function, this);

@@ -4,6 +4,7 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <utility>
 #include "utils.h"
@@ -41,13 +42,14 @@ class RPromise {
  private:
   std::shared_ptr<std::promise<Result>> promise =
       std::make_shared<std::promise<Result>>();
+  RTask<Result> task;
 
  public:
-  RTask<Result> get_return_object() {
-    return RTask<Result>(
-        std::coroutine_handle<RPromise<Result>>::from_promise(*this), nullptr,
-        promise);
-  }
+  RPromise()
+      : task(std::coroutine_handle<RPromise<Result>>::from_promise(*this),
+             nullptr,
+             promise) {}
+  RTask<Result> get_return_object() { return this->task; }
   std::suspend_always initial_suspend() {
     return {};
   }  // waiting for the scheduler to resume it
@@ -62,8 +64,9 @@ class RPromise {
   void unhandled_exception() noexcept {
     auto exception = std::current_exception();
     // stop the panic here to avoid the crash of whole program
+    // TODO: pass the crash to logger or user's custom handler
   }
-  void await_transform() {}
+
   template <typename T>
     requires std::convertible_to<T, Result>
   void return_value(T&& value) noexcept {
