@@ -7,7 +7,7 @@ RCo::RTask<long long> add(int a, int b) {
     long long ret = 0;
     for (int i = 0; i < 10000; i++) {
         ret += a * b * i;
-        rsched();
+        // rsched();
     }
     // auto worker = __GetWorker();
     auto worker = RCo::current_worker;

@@ -3,6 +3,7 @@
 #include "worker.h"
 #include <algorithm>
 #include <cstdlib>
+#include <mutex>
 namespace RCo {
 Core::Core(long coreID, RScheduler *scheduler)
     : coreID(coreID)
@@ -10,7 +11,7 @@ Core::Core(long coreID, RScheduler *scheduler)
     workers.reserve(scheduler->config.MaxSystemThreadPerCore);
 }
 RWorker *Core::getOneWorker() noexcept {
-    workersLock.lock();
+    std::lock_guard<std::mutex> workersLockGuard(this->workersLock);
     // find a available free worker
     for (auto worker : workers) {
         if (!worker->isBusy()) {
@@ -19,7 +20,6 @@ RWorker *Core::getOneWorker() noexcept {
                 continue;
             }
             // then this worker is ok!
-            workersLock.unlock();
             return worker;
         }
     }
@@ -30,7 +30,6 @@ RWorker *Core::getOneWorker() noexcept {
         auto worker = new RWorker(this, workerNum == 0); // if it is NO.0 worker, it never dies
         worker->tagNewWorkIsOnTheWay();
         workers.push_back(worker);
-        workersLock.unlock();
         return worker;
     }
     // TODO: better way to obtain a worker
@@ -40,11 +39,9 @@ RWorker *Core::getOneWorker() noexcept {
             continue;
         }
         // then this worker is ok!
-        workersLock.unlock();
         return worker;
     }
     // impossible to reach here as there is always a NO.0 worker available
-    workersLock.unlock();
     return nullptr;
 }
 void Core::removeWorker(RWorker *worker) noexcept {

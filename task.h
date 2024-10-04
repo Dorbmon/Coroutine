@@ -1,18 +1,20 @@
 #pragma once
 #include "utils.h"
+
 #include <concepts>
 #include <coroutine>
 #include <exception>
 #include <functional>
 #include <future>
-#include <iostream>
 #include <memory>
-#include <utility>
 namespace RCo {
 
 class RWorker;
-template <typename Result> class RPromise;
-template <typename Result> class RTask {
+template <typename Result>
+class RPromise;
+
+template <typename Result> 
+class RTask {
 public:
     using ResultType   = Result;
     using promise_type = RPromise<Result>;
@@ -27,15 +29,11 @@ public:
         , worker(worker)
         , promise(promise) {
     }
-    void await_suspend(std::coroutine_handle<RPromise<Result>> h) {
-        // the current coroutine is suspended, then call the worker to re-schedule
-        this->worker->appendWork(h); // impossible to return false
-        return;                      // then the control will be passed to the resumer
-    }
+
+    void await_suspend(std::coroutine_handle<RPromise<Result>>);
     RWorker                              *worker;
     std::shared_ptr<std::promise<Result>> promise;
-    // void await_suspend(std::coroutine_handle<RPromise<Result>> h);
-    std::coroutine_handle<RTask<Result>::promise_type> handler;
+    std::coroutine_handle<promise_type> handler;
 };
 template <typename Result> class RPromise {
 private:
@@ -50,6 +48,7 @@ public:
         return this->task;
     }
     std::suspend_always initial_suspend() {
+        // so that we can have the worker to run current coroutine
         return {};
     } // waiting for the scheduler to resume it
 

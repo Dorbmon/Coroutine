@@ -1,13 +1,8 @@
 #pragma once
 #include "core.h"
 #include "thread.h"
-#include <concepts>
-#include <coroutine>
 #include <future>
-#include <iostream>
-#include <list>
 #include <stdexcept>
-#include <type_traits>
 namespace RCo {
 struct RSchedulerConfig {
     long MaxCores;

@@ -2,7 +2,7 @@
 #include "scheduler.h"
 #include "thread.h"
 #include <functional>
-#include <iostream>
+#include <mutex>
 #include <pthread.h>
 namespace RCo {
 thread_local RWorker  *current_worker;
@@ -16,14 +16,12 @@ RWorker::~RWorker() {
     delete this->thread;
 }
 bool RWorker::appendWork(workBase *work) noexcept {
-    this->worksLock.lock();
+    std::lock_guard worksLockGuard(this->worksLock);
     [[unlikely]] if (shutdown) {
-        this->worksLock.lock();
         return false;
     }
     newWorkTag--;
     this->works.push_back(work);
-    this->worksLock.unlock();
     return true;
 }
 bool RWorker::isBusy() noexcept {
@@ -33,13 +31,11 @@ bool RWorker::isBusy() noexcept {
     return this->working;
 }
 bool RWorker::tagNewWorkIsOnTheWay() noexcept {
-    worksLock.lock();
+    std::lock_guard worksLockGuard(this->worksLock);
     [[unlikely]] if (this->shutdown) {
-        worksLock.unlock();
         return false;
     }
     newWorkTag++;
-    worksLock.unlock();
     return true;
 }
 void RWorker::threadFunction() noexcept {
@@ -73,8 +69,8 @@ void RWorker::threadFunction() noexcept {
                 // starts to shutdown
                 shutdown = true;
                 this->worksLock.unlock();
-                pthread_exit(nullptr); // this worker no longer exists
                 this->core->removeWorker(this);
+                pthread_exit(nullptr); // this worker no longer exists
                 return;
             }
         }

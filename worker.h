@@ -2,23 +2,23 @@
 // each worker will be binded to their own cpu core (1 core to multi workers)
 #include "task.h"
 #include <atomic>
-#include <coroutine>
-#include <future>
 #include <list>
 #include <mutex>
 namespace RCo {
 class RThread;
 class Core;
-struct workBase {
+class workBase {
+public:
     virtual void resume() = 0;
 };
-extern thread_local RWorker  *current_worker;
-extern thread_local workBase *current_work;
+
 #define rsched()                                        \
     RCo::current_worker->appendWork(RCo::current_work); \
     co_await std::suspend_always {}
+
 template <typename returnValue> struct work : public workBase {
     RTask<returnValue> task;
+
     work(RTask<returnValue> task)
         : task(task) {
     }
@@ -47,4 +47,5 @@ private:
     std::atomic_int       newWorkTag = 0;
     void                  threadFunction() noexcept;
 };
+extern thread_local RWorker  *current_worker;
 } // namespace RCo

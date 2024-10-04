@@ -1,13 +1,11 @@
 #pragma once
 #ifdef __linux
-#include <exception>
 #include <functional>
 
 #include "core.h"
 #include <pthread.h>
 #include <sched.h>
 #include <string.h>
-#include <thread>
 #include <unistd.h>
 namespace RCo {
 inline long getCoreNum() {
