@@ -8,7 +8,6 @@
 #include <future>
 #include <iostream>
 #include <memory>
-#include <type_traits>
 namespace RCo {
 
 class RWorker;
@@ -35,6 +34,8 @@ template <typename Result, template <typename> class OP_T = RAlwaysJoinOP>
 class RTask {
 public:
   using ResultType = Result;
+  template <typename OP_IN_T>
+  using OPType = OP_T<OP_IN_T>;
   using promise_type = RPromise<Result, OP_T>;
   RTask(const RTask &task) {
     this->worker = task.worker;

@@ -1,14 +1,25 @@
 #pragma once
 #include "core.h"
 #include "thread.h"
+#include "utils.h"
 #include <future>
 #include <stdexcept>
+#include <type_traits>
+#include "task.h"
 namespace RCo {
+
+template <typename T>
+struct is_rtask_specialization : std::false_type {};
+
+template <typename ResultType, template<typename> class OPType>
+struct is_rtask_specialization<RTask<ResultType, OPType>> : std::true_type {};
+
+template <typename T>
+concept IsRTaskSpecialization = is_rtask_specialization<T>::value;
 
 template <typename F, typename... Args>
 concept RTaskReturnable = requires(F &&f, Args &&...args) {
-  // is_specialization<typename decltype(std::function{f})::result_type, RTask>{};
-  std::true_type{};
+  { f(std::forward<Args>(args)...) } -> IsRTaskSpecialization;
 };
 
 struct RSchedulerConfig {
