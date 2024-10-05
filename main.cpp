@@ -5,8 +5,8 @@
 #include <math.h>
 #include "callback.h"
 
-RCo::RTask<int> test_task() {
-    co_return 0;
+RCo::RTask<void> test_task() {
+    co_return ;
 }
 void callback_f(std::unique_ptr<std::function<void(int&&)>> f) {
     std::cout << "Start callback" << std::endl;
