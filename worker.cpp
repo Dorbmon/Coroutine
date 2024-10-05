@@ -57,7 +57,7 @@ void RWorker::threadFunction() noexcept {
             this->worksLock.unlock();
             this->working = false;
             noTaskTryTime++;
-            if (noTaskTryTime > this->core->scheduler->config.MaxNoTaskTryTime && !neverDieWorker) {
+            if (num_pending_task == 0 && noTaskTryTime > this->core->scheduler->config.MaxNoTaskTryTime && !neverDieWorker) {
                 // then this thread should stop to release system resource
                 // refuse to add any work to this worker
                 this->worksLock.lock();

@@ -3,10 +3,25 @@
 #include "worker.h"
 #include <iostream>
 #include <math.h>
+#include "callback.h"
+
+RCo::RTask<int> test_task() {
+    co_return 0;
+}
+void callback_f(std::unique_ptr<std::function<void(int&&)>> f) {
+    std::cout << "Start callback" << std::endl;
+    (*f)(1);
+}
 RCo::RTask<long long> add(int a, int b) {
+    co_await RCo::callback_to_awaitable<int>(callback_f);
+    std::cout << "Go" << std::endl;
+    co_await test_task();
+    
     long long ret = 0;
     for (int i = 0; i < 10000; i++) {
         ret += a * b * i;
+        sleep(1);
+        std::cout << "Count:" << ret << std::endl;
         // rsched();
     }
     // auto worker = __GetWorker();
@@ -20,6 +35,7 @@ int main() {
     std::cout << "gogogo" << std::endl;
     for (int i = 0; i < 100000; i++) {
     }
+    sleep(10);
     std::cout << "rfnish" << std::endl;
     auto v = ret.get();
     std::cout << "cal v:" << v << std::endl;

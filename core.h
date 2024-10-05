@@ -5,6 +5,7 @@
 #include <vector>
 namespace RCo {
 class RScheduler;
+
 class Core {
 private:
     long                   coreID;
@@ -24,4 +25,6 @@ public:
     RWorker *getOneWorker() noexcept;
     void     removeWorker(RWorker *worker) noexcept;
 };
+
+
 } // namespace RCo

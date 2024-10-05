@@ -4,79 +4,103 @@
 #include <concepts>
 #include <coroutine>
 #include <exception>
-#include <functional>
 #include <future>
+#include <iostream>
 #include <memory>
+#include <type_traits>
+#include "worker.h"
 namespace RCo {
 
 class RWorker;
-template <typename Result>
-class RPromise;
+template <typename Result, template<typename> class OP_T> class RPromise;
 
-template <typename Result> 
+
+
+
+template <template<typename> class OP_T, typename Result>
+concept OP_Type = requires(std::coroutine_handle<RPromise<Result, OP_T>> h, RWorker *worker) {
+    OP_T<Result>::await_suspend(h, worker);
+};
+
+
+template <typename Result> class RAlwaysJoin {
+public:
+  template <template<typename> class IN_OP_T>
+  static void await_suspend(std::coroutine_handle<RPromise<Result, IN_OP_T>> h,
+                            RWorker *worker, void* metadata) {
+                                std::cout << "Always got..." << std::endl;
+                                worker->appendWork(new dumyWorkBase([h = h]() {h.resume();}));
+                            }
+};
+
+template <typename Result, template<typename> class OP_T = RAlwaysJoin>
+
 class RTask {
 public:
-    using ResultType   = Result;
-    using promise_type = RPromise<Result>;
-    RTask(const RTask &task) {
-        this->worker  = task.worker;
-        this->handler = task.handler;
-        this->promise = task.promise;
-    }
-    RTask(std::coroutine_handle<RTask<Result>::promise_type> handler, RWorker *worker,
-          std::shared_ptr<std::promise<Result>> promise)
-        : handler(handler)
-        , worker(worker)
-        , promise(promise) {
-    }
+  using ResultType = Result;
+  using promise_type = RPromise<Result, OP_T>;
+  RTask(const RTask &task) {
+    this->worker = task.worker;
+    this->handler = task.handler;
+    this->promise = task.promise;
+  }
+  bool await_ready() {
+    return false;
+  }
+  void await_resume() {}
+  RTask(std::coroutine_handle<RTask<Result, OP_T>::promise_type> handler,
+        RWorker *worker, std::shared_ptr<std::promise<Result>> promise)
+      : handler(handler), worker(worker), promise(promise) {}
+  
+  template<typename IN_T, template<typename> class IN_OP_T>
 
-    void await_suspend(std::coroutine_handle<RPromise<Result>>);
-    RWorker                              *worker;
-    std::shared_ptr<std::promise<Result>> promise;
-    std::coroutine_handle<promise_type> handler;
+  void await_suspend(std::coroutine_handle<RPromise<IN_T, IN_OP_T>>h) {
+    std::cout << "Suspend.." << std::endl;
+    OP_T<IN_T>::await_suspend(h, this->worker, metadata);
+  }
+  RWorker *worker;
+  std::shared_ptr<std::promise<Result>> promise;
+  std::coroutine_handle<promise_type> handler;
+  void* metadata = nullptr;
 };
-template <typename Result> class RPromise {
+
+
+template <typename Result, template<typename> class OP_T> class RPromise {
 private:
-    std::shared_ptr<std::promise<Result>> promise = std::make_shared<std::promise<Result>>();
-    RTask<Result>                         task;
+  std::shared_ptr<std::promise<Result>> promise =
+      std::make_shared<std::promise<Result>>();
+  RTask<Result, OP_T> task;
 
 public:
-    RPromise()
-        : task(std::coroutine_handle<RPromise<Result>>::from_promise(*this), nullptr, promise) {
-    }
-    RTask<Result> get_return_object() {
-        return this->task;
-    }
-    std::suspend_always initial_suspend() {
-        // so that we can have the worker to run current coroutine
-        return {};
-    } // waiting for the scheduler to resume it
+  RPromise()
+      : task(std::coroutine_handle<RPromise<Result, OP_T>>::from_promise(*this),
+             current_worker, promise) {}
+  RTask<Result, OP_T> get_return_object() { return this->task; }
+  std::suspend_always initial_suspend() {
+    // std::cout << "Init..." << std::endl;
+    // so that we can have the worker to run other coroutine
+    return {};
+  } // waiting for the scheduler to resume it
 
-    template <typename T>
-        requires std::convertible_to<T, Result>
-    std::suspend_always yield_value(T &&value) {
-        // value_ = std::forward<T>(value);  // caching the result in promise
-        return {};
-    }
-    std::suspend_never final_suspend() noexcept {
-        return {};
-    }
-    void unhandled_exception() noexcept {
-        auto exception = std::current_exception();
-        // stop the panic here to avoid the crash of whole program
-        // TODO: pass the crash to logger or user's custom handler
-    }
+  template <typename T>
+    requires std::convertible_to<T, Result>
+  std::suspend_always yield_value(T &&value) {
+    // value_ = std::forward<T>(value);  // caching the result in promise
+    return {};
+  }
+  std::suspend_never final_suspend() noexcept { return {}; }
+  void unhandled_exception() noexcept {
+    auto exception = std::current_exception();
+    // stop the panic here to avoid the crash of whole program
+    // TODO: pass the crash to logger or user's custom handler
+  }
 
-    template <typename T>
-        requires std::convertible_to<T, Result>
-    void return_value(T &&value) noexcept {
-        promise->set_value(value);
-        return;
-    }
+  template <typename T>
+    requires std::convertible_to<T, Result>
+  void return_value(T &&value) noexcept {
+    promise->set_value(value);
+    return;
+  }
 };
-template <typename F, typename... Args>
-concept RTaskReturnable =
-    requires(F &&f, Args &&...args) {
-        is_specialization<typename decltype(std::function{f})::result_type, RTask>{};
-    };
+
 } // namespace RCo
