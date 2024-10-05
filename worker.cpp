@@ -7,9 +7,10 @@
 namespace RCo {
 thread_local RWorker  *current_worker;
 thread_local workBase *current_work;
-RWorker::RWorker(Core *core, bool neverDieWorker)
+RWorker::RWorker(Core *core, bool neverDieWorker, int config)
     : core(core)
-    , neverDieWorker(neverDieWorker) {
+    , neverDieWorker(neverDieWorker)
+    , config(config) {
     this->thread = new RThread(core, std::bind(&RWorker::threadFunction, this));
 }
 RWorker::~RWorker() {

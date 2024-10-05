@@ -20,7 +20,7 @@ concept OP_Type =
       OP_T<Result>::await_suspend(h, worker);
     };
 
-template <typename Result> class RAlwaysJoin {
+template <typename Result> class RAlwaysJoinOP {
 public:
   template <template <typename> class IN_OP_T>
   static void await_suspend(std::coroutine_handle<RPromise<Result, IN_OP_T>> h,
@@ -30,7 +30,7 @@ public:
   }
 };
 
-template <typename Result, template <typename> class OP_T = RAlwaysJoin>
+template <typename Result, template <typename> class OP_T = RAlwaysJoinOP>
 
 class RTask {
 public:

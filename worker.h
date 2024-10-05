@@ -27,13 +27,15 @@ public:
   RCo::current_worker->appendWork(RCo::current_work);                          \
   co_await std::suspend_always {}
 
-
+const int RWORKER_CONFIG_MONOPOLY = 1 << 1;
 class RWorker {
 public:
+  int config = 0;
   Core *core;
   RThread *thread;
   RWorker() = delete;
-  RWorker(Core *core, bool neverDieWorker);
+  RWorker(RWorker&) = delete;
+  RWorker(Core *core, bool neverDieWorker, int config = 0);
   ~RWorker();
   bool appendWork(workBase *work) noexcept;
   bool isBusy() noexcept;

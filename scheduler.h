@@ -50,6 +50,19 @@ public:
         return awaitable.promise->get_future();
         // F::
     }
+
+    template <typename F, typename... Args>
+        requires RTaskReturnable<F, Args...>
+    auto run_heavy(F f, const Args &...args) -> std::future<typename decltype(f(args...))::ResultType> {
+        using return_type     = decltype(f(args...));
+        auto        core      = this->GetOneCore();
+        auto        worker    = core->createMonopolyWorker();
+        return_type awaitable = f(args...);
+        awaitable.worker      = worker; // set the worker
+        worker->appendWork(new dumyWorkBase{
+            [handler = awaitable.handler]() { handler.resume(); }}); // it has been tagged and will never return false
+        return awaitable.promise->get_future();
+    }
     // template <typename F, typename... Args>
     // // requires std::convertible_to<F, std::function<decltype(F())(Args...)>>
     // auto run(F f, const Args&... args) -> std::promise<decltype(F())> {

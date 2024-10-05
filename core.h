@@ -1,6 +1,5 @@
 #pragma once
 #include "worker.h"
-#include <atomic>
 #include <sched.h>
 #include <vector>
 namespace RCo {
@@ -11,7 +10,7 @@ private:
     long                   coreID;
     std::mutex             workersLock;
     std::vector<RWorker *> workers;
-
+    std::vector<RWorker *> monopolyWorkers;
 public:
     RScheduler *scheduler;
     Core() = delete;
@@ -23,6 +22,7 @@ public:
         return mask;
     }
     RWorker *getOneWorker() noexcept;
+    RWorker *createMonopolyWorker() noexcept;
     void     removeWorker(RWorker *worker) noexcept;
 };
 
