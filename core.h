@@ -7,24 +7,19 @@ class RScheduler;
 
 class Core {
 private:
-    long                   coreID;
-    std::mutex             workersLock;
-    std::vector<RWorker *> workers;
-    std::vector<RWorker *> monopolyWorkers;
-public:
-    RScheduler *scheduler;
-    Core() = delete;
-    Core(long coreID, RScheduler *scheduler);
-    cpu_set_t toBindMask() {
-        cpu_set_t mask;
-        CPU_ZERO(&mask);
-        CPU_SET(this->coreID, &mask);
-        return mask;
-    }
-    RWorker *getOneWorker() noexcept;
-    RWorker *createMonopolyWorker() noexcept;
-    void     removeWorker(RWorker *worker) noexcept;
-};
+  long coreID;
+  std::mutex workersLock;
+  std::vector<RWorker *> workers;
+  std::vector<RWorker *> monopolyWorkers;
 
+public:
+  RScheduler *scheduler;
+  Core() = delete;
+  Core(long coreID, RScheduler *scheduler);
+  RWorker *getOneWorker() noexcept;
+  RWorker *createMonopolyWorker() noexcept;
+  void removeWorker(RWorker *worker) noexcept;
+  long getCoreID() { return this->coreID; }
+};
 
 } // namespace RCo
