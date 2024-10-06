@@ -49,9 +49,9 @@ RTask<void> timer_main_loop() {
 }
 
 RTask<void> sleep(unsigned long long delay_ms) {
-  std::function<void(std::unique_ptr<std::function<void()>>)> f =
-      [](std::unique_ptr<std::function<void(void)>>) {};
+  std::function<void(std::function<void(void)> *)> f =
+      [](std::function<void(void)> *callback) { (*callback)(); };
 
-  co_await callback_to_awaitable(std::move(f));
+  co_await callback_to_awaitable(f);
 }
 } // namespace RCo

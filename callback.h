@@ -56,13 +56,20 @@ static RTask<Ret_V, CallbackOP> callback_to_awaitable(Function &&f) {
   return ret;
 }
 
-using void_callback_function =
-    std::function<void(std::unique_ptr<std::function<void()>>)>;
+using void_callback_function = std::function<void(std::function<void()> *)>;
+static RTask<void, CallbackOP>
+callback_to_awaitable(void_callback_function &f) {
+  auto promise = (typename RTask<void, CallbackOP>::promise_type){};
+  auto f_p = new std::function<void(std::function<void(void)> *)>(f);
+  auto ret = promise.get_return_object();
+  ret.metadata = (void *)f_p;
+  return ret;
+}
+using void_callback_function = std::function<void(std::function<void()> *)>;
 static RTask<void, CallbackOP>
 callback_to_awaitable(void_callback_function &&f) {
   auto promise = (typename RTask<void, CallbackOP>::promise_type){};
-  auto f_p =
-      new std::function<void(std::unique_ptr<std::function<void(void)>>)>(f);
+  auto f_p = new std::function<void(std::function<void(void)> *)>(f);
   auto ret = promise.get_return_object();
   ret.metadata = (void *)f_p;
   return ret;

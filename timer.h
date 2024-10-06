@@ -32,8 +32,10 @@ static void delay(unsigned long long delay_ms, F f, const Args &...args) {
   // To erase the template
   auto task = std::make_unique<TimerTask>(current_time + delay_ms,
                                           [f, args...]() { run(f, args...); });
-  std::lock_guard<std::mutex> timer_lock_guard(timer_lock);
-  task_heap.push(std::move(task));
+  {
+    std::lock_guard<std::mutex> timer_lock_guard(timer_lock);
+    task_heap.push(std::move(task));
+  }
 }
 
 RTask<void> sleep(unsigned long long delay_ms);
