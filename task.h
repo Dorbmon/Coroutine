@@ -34,8 +34,7 @@ template <typename Result, template <typename> class OP_T = RAlwaysJoinOP>
 class RTask {
 public:
   using ResultType = Result;
-  template <typename OP_IN_T>
-  using OPType = OP_T<OP_IN_T>;
+  template <typename OP_IN_T> using OPType = OP_T<OP_IN_T>;
   using promise_type = RPromise<Result, OP_T>;
   RTask(const RTask &task) {
     this->worker = task.worker;
@@ -68,12 +67,13 @@ public:
   RTask<Result, OP_T> task;
 
 public:
-  __RPromise_Base(std::coroutine_handle<typename RTask<Result, OP_T>::promise_type> handler,
-        RWorker *worker)
+  __RPromise_Base(
+      std::coroutine_handle<typename RTask<Result, OP_T>::promise_type> handler,
+      RWorker *worker)
       : task(handler, worker, promise) {}
   RTask<Result, OP_T> get_return_object() { return this->task; }
   std::suspend_always initial_suspend() {
-    // std::cout << "Init..." << std::endl;
+    std::cout << "Init..." << std::endl;
     // so that we can have the worker to run other coroutine
     return {};
   } // waiting for the scheduler to resume it
@@ -90,14 +90,15 @@ public:
     // stop the panic here to avoid the crash of whole program
     // TODO: pass the crash to logger or user's custom handler
   }
-
 };
 
 template <typename Result, template <typename> class OP_T>
 class RPromise : public __RPromise_Base<Result, OP_T> {
 public:
-  RPromise(): __RPromise_Base<Result, OP_T>(std::coroutine_handle<RPromise<Result, OP_T>>::from_promise(*this),
-             current_worker) {}
+  RPromise()
+      : __RPromise_Base<Result, OP_T>(
+            std::coroutine_handle<RPromise<Result, OP_T>>::from_promise(*this),
+            current_worker) {}
   template <typename T, typename U = Result>
     requires std::convertible_to<T, Result>
   void return_value(T &&value) noexcept {
@@ -112,8 +113,10 @@ public:
 template <template <typename> class OP_T>
 class RPromise<void, OP_T> : public __RPromise_Base<void, OP_T> {
 public:
-  RPromise(): __RPromise_Base<void, OP_T>(std::coroutine_handle<RPromise<void, OP_T>>::from_promise(*this),
-             current_worker) {}
+  RPromise()
+      : __RPromise_Base<void, OP_T>(
+            std::coroutine_handle<RPromise<void, OP_T>>::from_promise(*this),
+            current_worker) {}
 
   void return_void() noexcept { this->promise->set_value(); }
 };

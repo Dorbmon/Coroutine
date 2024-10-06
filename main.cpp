@@ -4,9 +4,10 @@
 #include "worker.h"
 #include <iostream>
 #include <math.h>
+
 #include <unistd.h>
 RCo::RTask<void> test_task() { co_return; }
-void callback_f(std::unique_ptr<std::function<void(int &&)>> f) {
+void callback_f(std::function<void(int)> *f) {
   std::cout << "Start callback" << std::endl;
   (*f)(1);
 }

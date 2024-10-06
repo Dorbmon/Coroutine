@@ -7,8 +7,14 @@ namespace RCo {
 class RWorker;
 RWorker *__getCurrentWorker();
 
-template<class T, typename RET_V>
-concept FunctionWithCallback = requires (std::function<RET_V()> callback) {
-    T(callback);
-};
+template <typename F, typename RET_V>
+concept FunctionWithCallback =
+    requires(F f, std::function<void(RET_V)> *callback) {
+      { f(std::move(callback)) };
+    };
+template <typename F>
+concept FunctionWithVoidCallback =
+    requires(F f, std::function<void(void)> *callback) {
+      { f(std::move(callback)) };
+    };
 } // namespace RCo

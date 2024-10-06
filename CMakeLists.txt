@@ -13,7 +13,7 @@ else()
 endif()
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread" )
 list ( APPEND PRJ_COMPILE_FEATURES cxx_std_20 )
-add_executable(rcoroutine scheduler.cpp promise.cpp thread.cpp worker.cpp core.cpp callback.h main.cpp)
+add_executable(rcoroutine scheduler.cpp promise.cpp thread.cpp worker.cpp core.cpp callback.h timer.cpp main.cpp)
 target_compile_features ( rcoroutine
 	PRIVATE 
 		${PRJ_COMPILE_FEATURES}
