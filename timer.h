@@ -1,5 +1,5 @@
 #pragma once
-#include "platform/darwin/time.h"
+#include "platform/time.h"
 #include "scheduler.h"
 #include <memory>
 #include <mutex>

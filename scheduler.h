@@ -43,7 +43,6 @@ public:
     }
     this->config = config;
     useCoreNum = std::min(getCoreNum(), config.MaxCores);
-    std::cout << "Core count: " << getCoreNum() << std::endl;
     for (long i = 0; i < useCoreNum; i++) {
       this->cores.push_back(new Core(i, this));
     }

@@ -1,6 +1,5 @@
 #pragma once
 #ifdef __linux
-#include <_time.h>
 #include <time.h>
 namespace RCo {
 static unsigned long long getCurrentMillisecs() {

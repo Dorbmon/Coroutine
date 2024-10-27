@@ -36,7 +36,7 @@ public:
     cpu_set_t mask;
     CPU_ZERO(&mask);
     CPU_SET(coreID, &mask);
-    return mask;
+    
     pthread_setaffinity_np(this->threadHandler, sizeof(mask), &mask);
   }
   void Run() noexcept { pthread_detach(this->threadHandler); }

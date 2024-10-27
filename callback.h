@@ -6,11 +6,10 @@
 namespace RCo {
 template <typename Result> class CallbackOP {
 public:
-  template <template <typename> class IN_OP_T>
-  static void await_suspend(std::coroutine_handle<RPromise<Result, IN_OP_T>> h,
-                            RWorker *worker, void *metadata) {
+  template <typename HANDLE_T>
+  static void await_suspend(std::coroutine_handle<HANDLE_T> h,
+                            RWorker *worker, void *metadata, std::shared_ptr<std::promise<Result>> promise) {
     // Correctly cast the metadata to the appropriate function type
-    std::cout << "suspend...." << std::endl;
     auto f = static_cast<
         std::function<void(std::unique_ptr<std::function<void(Result &&)>>)> *>(
         metadata);
@@ -19,7 +18,8 @@ public:
     // Ensure that the function pointer is deleted after use to prevent memory
     // leaks
     auto callback = std::make_unique<std::function<void(Result &&)>>(
-        [f, h, worker](Result &&v) {
+        [f, h, worker, promise](Result &&v) {
+          promise->set_value(v);
           worker->appendWork(new dumyWorkBase([h]() { h.resume(); }));
         });
     (*f)(std::move(callback));
@@ -27,11 +27,10 @@ public:
 };
 template <> class CallbackOP<void> {
 public:
-  template <template <typename> class IN_OP_T>
-  static void await_suspend(std::coroutine_handle<RPromise<void, IN_OP_T>> h,
-                            RWorker *worker, void *metadata) {
+  template <typename HANDLE_T>
+  static void await_suspend(std::coroutine_handle<HANDLE_T> h,
+                            RWorker *worker, void *metadata, std::shared_ptr<std::promise<void>> promise) {
     // Correctly cast the metadata to the appropriate function type
-    std::cout << "suspend...." << std::endl;
     auto f = static_cast<
         std::function<void(std::unique_ptr<std::function<void(void)>>)> *>(
         metadata);
@@ -40,7 +39,8 @@ public:
     // Ensure that the function pointer is deleted after use to prevent memory
     // leaks
     auto callback =
-        std::make_unique<std::function<void(void)>>([f, h, worker]() {
+        std::make_unique<std::function<void(void)>>([f, h, worker, promise]() {
+          promise->set_value();
           worker->appendWork(new dumyWorkBase([h]() { h.resume(); }));
         });
     (*f)(std::move(callback));
